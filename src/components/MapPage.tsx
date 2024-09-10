@@ -1,7 +1,7 @@
 import { FC, useState, useEffect } from 'react';
 import { APIProvider, Map, AdvancedMarker } from '@vis.gl/react-google-maps';
 import { db } from '../firebaseConfig'
-import { collection, query, where, onSnapshot, QuerySnapshot, DocumentData } from 'firebase/firestore'
+import { collection, query, where, onSnapshot, QuerySnapshot, DocumentData, GeoPoint } from 'firebase/firestore'
 import Navbar from './Navbar';
 
 const center = {
@@ -18,36 +18,25 @@ const MapPage: FC = () => {
 	const [markers, setMarkers] = useState<MarkerData[]>([]);
 	useEffect(() => {
 		const fetchAddresses = async () => {
-			const addressQuery = query(collection(db, "organization"), where("hostingConference", "==", "Y"));
+			const addressQuery = query(collection(db, "organization"), where("hostingConference", "==", "Yes"));
 			const unsubscribe = onSnapshot(addressQuery, (querySnapshot: QuerySnapshot<DocumentData>) => {
-				const addresses: string[] = [];
+                const geocodedMarkers: MarkerData[] = [];
 				querySnapshot.forEach((doc) => {
-					addresses.push(doc.data().address as string);
+                  const data = doc.data();
+                  if (data.coordinates && data.coordinates instanceof GeoPoint) {
+                    const geoPoint = data.coordinates as GeoPoint;
+                    geocodedMarkers.push({
+                      id: Date.now() + Math.random(),
+                      position: {
+                        lat: geoPoint.latitude,
+                        lng: geoPoint.longitude,
+                      },
+                    });
+                  }
 				});
-				geocodeAddresses(addresses);
+                setMarkers(geocodedMarkers);
 			});
 			return () => unsubscribe();
-		};
-
-		const geocodeAddresses = async (addresses: string[]) => {
-			const geocodedMarkers: MarkerData[] = [];
-			for (const address of addresses) {
-				const response = await fetch(
-					`https://maps.googleapis.com/maps/api/geocode/json?address=${encodeURIComponent(address)}&key=${process.env.REACT_APP_MAPS_API_KEY}`
-				);
-				const data = await response.json();
-				if (data.results && data.results.length > 0) {
-					const location = data.results[0].geometry.location;
-					geocodedMarkers.push({
-						id: Date.now() + Math.random(),
-						position: {
-							lat: location.lat,
-							lng: location.lng,
-						},
-					});
-				}
-			}
-			setMarkers(geocodedMarkers);
 		};
 
 		fetchAddresses();

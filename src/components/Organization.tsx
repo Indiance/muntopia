@@ -78,16 +78,16 @@ const Organization: FC = () => {
 		<label htmlFor="attendingConf">Attending Conference: </label>
 		<select id="attendingConf" value={attendingConf} onChange={handleAttending}>
 		<option value="">Select</option>
-		<option value="Y">Y</option>
-		<option value="N">N</option>
+		<option value="Yes">Yes</option>
+		<option value="No">No</option>
 		</select>
 		</div>
 		<div className="form-group">
 		<label htmlFor="hostingConf">Hosting Conference: </label>
 		<select id="hostingConf" value={hostingConf} onChange={handleHosting}>
 		<option value="">Select</option>
-		<option value="Y">Y</option>
-		<option value="N">N</option>
+		<option value="Yes">Yes</option>
+		<option value="No">No</option>
 		</select>
 		</div>
 		<div className="form-group">

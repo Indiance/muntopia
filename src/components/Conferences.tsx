@@ -15,7 +15,7 @@ const Conferences: FC = () => {
 	const [data, setData] = useState<ConferenceData[]>([]);
 
 	useEffect(() => {
-		const hostingQuery = query(collection(db, "organization"), where("hostingConference", "==", "Y"));
+		const hostingQuery = query(collection(db, "organization"), where("hostingConference", "==", "Yes"));
 
 		const unsubscribe = onSnapshot(hostingQuery, (querySnapshot: QuerySnapshot<DocumentData>) => {
 			const results: ConferenceData[] = [];

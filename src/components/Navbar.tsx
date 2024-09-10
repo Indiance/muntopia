@@ -14,9 +14,9 @@ const Navbar: FC = () => {
 		</Typography>
 		<Button color="inherit" component={Link} to="/title">Home</Button>
 		<Button color="inherit" component={Link} to="/list">Conferences</Button>
+		<Button color="inherit" component={Link} to="/delegations">Delegations</Button>
 		<Button color="inherit" component={Link} to="/map">Map</Button>
 		<Button color="inherit" component={Link} to="/organization">Organization</Button>
-		<Button color="inherit" component={Link} to="/account">My Account</Button>
 		</Toolbar>
 		</AppBar>
 	);

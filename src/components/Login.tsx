@@ -23,17 +23,11 @@ const Login: FC = () => {
 		e.preventDefault();
 		try {
 			await signInWithEmailAndPassword(auth, email, password);
-			const userQuery = query(collection(db, "users"), where("email", "==", email));
+			const userQuery = query(collection(db, "organization"), where("email", "==", email));
 			const userSnapshot = await getDocs(userQuery);
 			if (!userSnapshot.empty) {
 				const userData = userSnapshot.docs[0].data();
-				const userOrg = userData.org;
-				const orgQuery = query(collection(db, "organization"), where("name", "==", userOrg));
-				const orgSnapshot = await getDocs(orgQuery);
-				if (!orgSnapshot.empty) {
-					const orgData = orgSnapshot.docs[0].data();
-					setContextOrgName(orgData.name);
-				}
+					setContextOrgName(userData.name);
 			}
 			navigate('/title');
 		} catch (error) {

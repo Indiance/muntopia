@@ -2,7 +2,7 @@ import { useContext, useState, FormEvent, ChangeEvent, FC } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { createUserWithEmailAndPassword } from 'firebase/auth';
 import { auth, db } from '../firebaseConfig';
-import { collection, addDoc, query, where, getDocs } from 'firebase/firestore';
+import { collection, addDoc, query, where, getDocs, GeoPoint } from 'firebase/firestore';
 import { UserContext } from '../context/userContext';
 import '../css/Signup.css';
 
@@ -16,8 +16,7 @@ const Signup: FC = () => {
 	const [email, setEmail] = useState<string>('');
 	const [password, setPassword] = useState<string>('');
 	const [org, setOrg] = useState<string>('');
-	const [firstName, setFirstName] = useState<string>('');
-	const [lastName, setLastName] = useState<string>('');
+	const [address, setAddress] = useState<string>('');
 	const [error, setError] = useState<string>('');
 	const navigate = useNavigate();
 	const context = useContext(UserContext);
@@ -28,34 +27,53 @@ const Signup: FC = () => {
 
 	const { setContextEmail, setContextOrgName } = context;
 
+    const geocodeAddress = async (address: string): Promise<GeoPoint | null> => {
+        try {
+            const response = await fetch(
+                `https://maps.googleapis.com/maps/api/geocode/json?address=${encodeURIComponent(address)}&key=${process.env.REACT_APP_MAPS_API_KEY}`
+            );
+            const data = await response.json();
+            if (data.results && data.results.length > 0) {
+                const location = data.results[0].geometry.location;
+                return new GeoPoint(location.lat, location.lng);
+            } else {
+                console.error('Geocoding failed: No results found');
+                return null;
+            }
+        } catch (error) {
+            console.error('Error in geocoding:', error);
+            return null;
+        }
+    };
+
 	const handleSignup = async (e: FormEvent<HTMLFormElement>) => {
 		e.preventDefault();
 		try {
 			const userCredential = await createUserWithEmailAndPassword(auth, email, password);
 			console.log('User signed up:', userCredential.user);
 
-			// Add user to Firestore
-			const userRef = await addDoc(collection(db, "users"), {
-				email: email,
-				firstName: firstName,
-				lastName: lastName,
-				org: org
-			});
-			console.log('User added to db:', userRef.id);
+            const geoPoint = await geocodeAddress(address);
+			if (!geoPoint) {
+				throw new Error('Failed to geocode address');
+			}
 
 			// Check if organization exists and add it if not
 			const orgQuery = query(collection(db, "organization"), where("name", "==", org));
 			const orgSnapshot = await getDocs(orgQuery);
 			if (orgSnapshot.empty) {
 				const orgRef = await addDoc(collection(db, "organization"), {
+                    email: email,
 					name: org,
+					address: address,
+                    coordinates: geoPoint,
 					attendingConference: " ",
 					hostingConference: " ",
 					conferenceWebsite: " ",
-					address: " "
 				});
 				console.log('Org added to db:', orgRef.id);
-			}
+			} else {
+                setError("Organization already exists");
+            }
 
 			// Update context
 			setContextEmail(email);
@@ -78,26 +96,6 @@ const Signup: FC = () => {
 		<div className="signup-container">
 		<h1>Sign Up</h1>
 		<form onSubmit={handleSignup}>
-		<div className='form-group'>
-		<label>First Name</label>
-		<input
-		type="text"
-		value={firstName}
-		onChange={handleChange(setFirstName)}
-		placeholder="Enter your first name"
-		required
-		/>
-		</div>
-		<div className='form-group'>
-		<label>Last Name</label>
-		<input
-		type="text"
-		value={lastName}
-		onChange={handleChange(setLastName)}
-		placeholder="Enter your last name"
-		required
-		/>
-		</div>
 		<div className="form-group">
 		<label>Email</label>
 		<input
@@ -125,6 +123,16 @@ const Signup: FC = () => {
 		value={org}
 		onChange={handleChange(setOrg)}
 		placeholder="Enter your university name"
+		required
+		/>
+        </div>
+		<div className='form-group'>
+		<label>Address</label>
+		<input
+		type="text"
+		value={address}
+		onChange={handleChange(setAddress)}
+		placeholder="Enter your university address"
 		required
 		/>
 		</div>
