@@ -1,13 +1,25 @@
+.container {
+    display: flex;
+    flex-direction: column; /* Stack inner divs vertically */
+    align-items: center;
+    padding: 1px;
+}
+
 .form-group {
     display: flex;
-    align-items: center;
-    margin-bottom: 10px;
+    flex-direction: row; /* Stack components horizontally inside each form-group */
+    align-items: center; /* Align items vertically within the form-group */
+    justify-content: center;
+    margin: 10px 10px;
+    width: 100%; /* Allow the form-group to take the full width of its parent */
+    max-width: 600px; /* Optional: Set a maximum width for better readability */
 }
 
-.form-group label {
+.success-message {
+    color: green;
+    font-weight: bold;
+}
+
+.input-label {
     margin-right: 10px;
-}
-
-.small-textbox {
-    width: 200px; /* Adjust the width as needed */
 }

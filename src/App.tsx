@@ -7,6 +7,7 @@ import TitlePage from './components/Title';
 import { UserProvider } from './context/userContext';
 import Organization from './components/Organization';
 import Conferences from './components/Conferences';
+import Delegations from './components/Delegations';
 
 const App: FC = () => {
 	return (
@@ -19,7 +20,8 @@ const App: FC = () => {
 		<Route path="/login" element={<Login />} />
 		<Route path="/map" element={<MapPage />} />
 		<Route path="/organization" element={<Organization />} />
-		<Route path="/list" element={<Conferences />} />
+		<Route path="/hosting" element={<Conferences />} />
+        <Route path="/delegations" element={<Delegations />} />
 		</Routes>
 		</Router>
 		</UserProvider>

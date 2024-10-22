@@ -17,35 +17,33 @@ import TableRow from "@mui/material/TableRow";
 import Navbar from "./Navbar";
 import "../css/Conferences.css";
 
-interface ConferenceData {
-  id: string;
+interface AttendanceData {
   name: string;
-  address: string;
-  conferenceWebsite: string;
+  id: string;
   email: string;
+  address: string;
 }
 
-const Conferences: FC = () => {
-  const [data, setData] = useState<ConferenceData[]>([]);
+const Delegations: FC = () => {
+  const [data, setData] = useState<AttendanceData[]>([]);
 
   useEffect(() => {
     const hostingQuery = query(
       collection(db, "organization"),
-      where("hostingConference", "==", "Yes"),
+      where("attendingConference", "==", "Yes"),
     );
 
     const unsubscribe = onSnapshot(
       hostingQuery,
       (querySnapshot: QuerySnapshot<DocumentData>) => {
-        const results: ConferenceData[] = [];
+        const results: AttendanceData[] = [];
         querySnapshot.forEach((doc) => {
           const data = doc.data();
           results.push({
             id: doc.id,
             name: data.name,
-            address: data.address,
             email: data.email,
-            conferenceWebsite: data.conferenceWebsite,
+            address: data.address,
           });
         });
         setData(results);
@@ -59,14 +57,13 @@ const Conferences: FC = () => {
   return (
     <div>
       <Navbar />
-      <h2>List of Universities Hosting Conferences</h2>
+      <h2>List of Universities Attending Conferences</h2>
       <TableContainer>
         <Table sx={{ minWidth: 650 }}>
           <TableHead>
             <TableRow>
               <TableCell align="center">University</TableCell>
               <TableCell align="center">Address</TableCell>
-              <TableCell align="center">Conference Website</TableCell>
               <TableCell align="center">Email</TableCell>
             </TableRow>
           </TableHead>
@@ -78,15 +75,6 @@ const Conferences: FC = () => {
               >
                 <TableCell align="center">{item.name}</TableCell>
                 <TableCell align="center">{item.address}</TableCell>
-                <TableCell align="center">
-                  <a
-                    href={item.conferenceWebsite}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                  >
-                    Conference Link
-                  </a>
-                </TableCell>
                 <TableCell align="center">{item.email}</TableCell>
               </TableRow>
             ))}
@@ -97,4 +85,4 @@ const Conferences: FC = () => {
   );
 };
 
-export default Conferences;
+export default Delegations;

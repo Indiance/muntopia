@@ -1,10 +1,10 @@
-import { useContext, useState, FormEvent, ChangeEvent, FC } from 'react';
+import { useContext, useState, FormEvent, FC } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { createUserWithEmailAndPassword } from 'firebase/auth';
-import { auth, db } from '../firebaseConfig';
 import { collection, addDoc, query, where, getDocs, GeoPoint } from 'firebase/firestore';
+import { Grid, TextField, Button, Typography, Link, Paper } from "@mui/material";
 import { UserContext } from '../context/userContext';
-import '../css/Signup.css';
+import { auth, db } from '../firebaseConfig';
 
 // Define types for the error object
 interface FirebaseError extends Error {
@@ -20,6 +20,14 @@ const Signup: FC = () => {
 	const [error, setError] = useState<string>('');
 	const navigate = useNavigate();
 	const context = useContext(UserContext);
+
+    const paperStyle = {
+        padding: 20,
+        height: "75vh",
+        width: 280,
+        margin: "20px auto",
+      };
+    const btnStyle = { margin: "8px 0" };
 
 	if (!context) {
 		throw new Error('UserContext must be used within a UserProvider');
@@ -88,58 +96,63 @@ const Signup: FC = () => {
 		}
 	};
 
-	const handleChange = (setter: React.Dispatch<React.SetStateAction<string>>) => (e: ChangeEvent<HTMLInputElement>) => {
-		setter(e.target.value);
-	};
-
 	return (
-		<div className="signup-container">
-		<h1>Sign Up</h1>
+        <Grid>
+        <Paper elevation={10} style={paperStyle}>
+		<h1>Muntopia</h1>
+		<h2>Sign Up</h2>
 		<form onSubmit={handleSignup}>
-		<div className="form-group">
-		<label>Email</label>
-		<input
-		type="email"
-		value={email}
-		onChange={handleChange(setEmail)}
-		placeholder="Enter your email"
-		required
-		/>
-		</div>
-		<div className="form-group">
-		<label>Password</label>
-		<input
-		type="password"
-		value={password}
-		onChange={handleChange(setPassword)}
-		placeholder="Enter your password"
-		required
-		/>
-		</div>
-		<div className='form-group'>
-		<label>University</label>
-		<input
-		type="text"
-		value={org}
-		onChange={handleChange(setOrg)}
-		placeholder="Enter your university name"
-		required
-		/>
-        </div>
-		<div className='form-group'>
-		<label>Address</label>
-		<input
-		type="text"
-		value={address}
-		onChange={handleChange(setAddress)}
-		placeholder="Enter your university address"
-		required
-		/>
-		</div>
+        <TextField
+            label="Email"
+            placeholder="enter an email"
+            variant="outlined"
+            fullWidth
+            required
+            onChange={(e) => {setEmail(e.target.value)}}
+            type="email"
+            margin="normal"
+        />
+        <TextField
+            label="Password"
+            placeholder="enter a password"
+            variant="outlined"
+            type="password"
+            fullWidth
+            required
+            onChange={(e) => {setPassword(e.target.value)}}
+            margin="normal"
+        />
+        <TextField
+            label="Organization Name"
+            placeholder="enter an organization name"
+            variant="outlined"
+            fullWidth
+            required
+            onChange={(e) => {setOrg(e.target.value)}}
+            margin="normal"
+        />
+        <TextField
+            label="Address"
+            placeholder="enter an address"
+            variant="outlined"
+            fullWidth
+            required
+            onChange={(e) => {setAddress(e.target.value)}}
+            margin="normal"
+        />
 		{error && <p className="error-message">{error}</p>}
-		<button type="submit" className="btn">Sign Up</button>
-		</form>
-		</div>
+        <Button type="submit" variant="contained" style={btnStyle} fullWidth>
+            Login
+        </Button>
+        </form>
+        <Typography align="center" style={{ marginTop: "10px" }}>
+            Already have an account?
+        <Link href="/login" style={{ marginLeft: "5px" }}>
+            Log In
+        </Link>
+        </Typography>
+        </Paper>
+        </Grid>
 	);
 };
 
