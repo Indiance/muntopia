@@ -22,8 +22,13 @@ import {
   MenuItem,
   SelectChangeEvent,
   InputLabel,
+  Box,
+  Snackbar,
+  Alert,
 } from "@mui/material";
-import { db } from "../firebaseConfig";
+import { db, auth } from "../firebaseConfig";
+import { signOut } from "firebase/auth";
+import { useNavigate } from "react-router-dom";
 import Navbar from "./Navbar";
 import { UserContext } from "../context/userContext";
 import "../css/Organization.css"; // Import the CSS file for styling
@@ -38,13 +43,18 @@ interface OrgData {
 }
 
 const Organization: FC = () => {
-  const { contextOrgName } = useContext(UserContext) || {}; // Use default values if context is undefined
+  const navigate = useNavigate();
+  const context = useContext(UserContext);
+  const { contextOrgName, setContextOrgName } = context || {};
   const [attendingConf, setAttendingConf] = useState<string>("");
   const [hostingConf, setHostingConf] = useState<string>("");
   const [website, setWebsite] = useState<string>("");
   const [address, setAddress] = useState<string>("");
-  const [originalAddress, setOriginalAddress] = useState<string>(""); // Track the original address
+  const [originalAddress, setOriginalAddress] = useState<string>("");
   const [successMessage, setSuccessMessage] = useState<string>("");
+  const [showSnackbar, setShowSnackbar] = useState<boolean>(false);
+  const [snackbarMessage, setSnackbarMessage] = useState<string>("");
+  const [snackbarSeverity, setSnackbarSeverity] = useState<"success" | "error">("success");
 
   const handleAttending = (event: SelectChangeEvent<string>) => {
     setAttendingConf(event.target.value);
@@ -100,15 +110,47 @@ const Organization: FC = () => {
           }
         }
 
-        // Update the document in Firebase
-        await updateDoc(orgRef, updateData);
-
-        setSuccessMessage("Information updated successfully!");
-        setTimeout(() => {
-          setSuccessMessage("");
-        }, 3000);
+        try {
+          // Update the document in Firebase
+          await updateDoc(orgRef, updateData);
+          
+          setSnackbarMessage("Information updated successfully!");
+          setSnackbarSeverity("success");
+          setShowSnackbar(true);
+          
+          setSuccessMessage("Information updated successfully!");
+          setTimeout(() => {
+            setSuccessMessage("");
+          }, 3000);
+        } catch (error) {
+          setSnackbarMessage("Failed to update information. Please try again.");
+          setSnackbarSeverity("error");
+          setShowSnackbar(true);
+          console.error("Error updating document:", error);
+        }
       }
     }
+  };
+
+  const handleLogout = async () => {
+    try {
+      await signOut(auth);
+      // Clear any user context
+      if (setContextOrgName) {
+        setContextOrgName("");
+      }
+      // Navigate to login page
+      navigate("/");
+    } catch (error) {
+      console.error("Error signing out:", error);
+      setSnackbarMessage("Failed to log out. Please try again.");
+      setSnackbarSeverity("error");
+      setShowSnackbar(true);
+    }
+  };
+
+  const handleCloseSnackbar = () => {
+    setShowSnackbar(false);
   };
 
   useEffect(() => {
@@ -135,7 +177,25 @@ const Organization: FC = () => {
   return (
     <div>
       <Navbar />
-      <h2 style={{ textAlign: "center" }}>Account Settings</h2>
+      <Box 
+        sx={{ 
+          display: 'flex', 
+          justifyContent: 'space-between', 
+          alignItems: 'center',
+          padding: '0 20px'
+        }}
+      >
+        <h2>Account Settings</h2>
+        <Button 
+          variant="outlined" 
+          color="error" 
+          onClick={handleLogout}
+          sx={{ marginLeft: 'auto' }}
+        >
+          Logout
+        </Button>
+      </Box>
+      
       <div className="container">
         <div className="form-group">
           <InputLabel htmlFor="attendingConf" className="input-label">
@@ -204,6 +264,21 @@ const Organization: FC = () => {
         </Button>
         {successMessage && <p className="success-message">{successMessage}</p>}
       </div>
+      
+      <Snackbar 
+        open={showSnackbar} 
+        autoHideDuration={6000} 
+        onClose={handleCloseSnackbar}
+        anchorOrigin={{ vertical: 'bottom', horizontal: 'center' }}
+      >
+        <Alert 
+          onClose={handleCloseSnackbar} 
+          severity={snackbarSeverity} 
+          sx={{ width: '100%' }}
+        >
+          {snackbarMessage}
+        </Alert>
+      </Snackbar>
     </div>
   );
 };
